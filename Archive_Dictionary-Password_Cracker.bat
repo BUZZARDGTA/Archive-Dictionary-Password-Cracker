@@ -15,6 +15,9 @@ cls
 
 setlocal DisableDelayedExpansion
 pushd "%~dp0"
+for /f %%A in ('copy /z "%~nx0" nul') do (
+    set "\R=%%A"
+)
 setlocal EnableDelayedExpansion
 
 set TITLE=Archive Dictionary-Password Cracker
@@ -28,14 +31,18 @@ echo:
 if defined user_archive_path (
     set user_archive_path=
 )
-set /p "user_archive_path=Enter the archive you want to crack: "
+echo Enter the archive you want to crack (*.zip, *.7z)
+set /p "user_archive_path=Archive: "
 call :CHECK_PATH_EXIST user_archive_path || (
     goto :PROMPT_USER_ARCHIVE_PATH
 )
 for %%A in ("!user_archive_path!") do (
-    if /i not "%%~xA"==".zip" if /i not "%%~xA"==".7z" if /i not "%%~xA"==".rar" (
-        goto :PROMPT_USER_ARCHIVE_PATH
+    if /i not "%%~xA"==".zip" (
+        if /i not "%%~xA"==".7z" (
+            goto :PROMPT_USER_ARCHIVE_PATH
+        )
     )
+    set "user_archive_foldernamepath=%%~dpnA\"
     set "user_archive_fullname=%%~nxA"
     set "user_archive_name=%%~nA"
 )
@@ -51,30 +58,47 @@ for /f "usebackq" %%A in ("!DICTIONARY_COMBOLIST!") do (
     set /a password[#]+=1
     set "password[!password[#]!]=%%A"
 )
-for /f "delims=" %%A in ('2^>nul dir "!user_archive_name!.*" /a:-d /b /o:d') do (
-    if not "%%A"=="!user_archive_fullname!" (
-        del "%%A"
-    )
+for /f "tokens=1-4delims=:.," %%A in ("!time: =0!") do set /a "t1=(((1%%A*60)+1%%B)*60+1%%C)*100+1%%D-36610100"
+if exist "!user_archive_foldernamepath!" (
+    rd /s /q "!user_archive_foldernamepath!"
+)
+if defined progress_bar (
+    set progress_bar=
 )
 for /l %%A in (1,1,!password[#]!) do (
-    set /a counter+=1, percentage=counter*100/password[#]
-    2>nul title Trying password: "!password[%%A]!" ^| [!percentage!/100%%] - !TITLE!
-    echo Trying password: "!password[%%A]!"
-    >nul 2>&1 lib\7za\x64\7za.exe x "!user_archive_path!" -p"!password[%%A]!" && (
+    for /f "tokens=1-4delims=:.," %%B in ("!time: =0!") do set /a "t2=(((1%%B*60)+1%%C)*60+1%%D)*100+1%%E-36610100, tDiff=t2-t1, tDiff+=((~(tDiff&(1<<31))>>31)+1)*8640000, seconds=tDiff/100, hours=seconds/3600, minutes=seconds/60%%60, seconds=seconds%%60"
+    if !hours! gtr 0 (
+        set "time_elapsed=!hours!h !minutes!m !seconds!s"
+    ) else if !minutes! gtr 0 (
+        set "time_elapsed=!minutes!m !seconds!s"
+    ) else (
+        set "time_elapsed=!seconds!s"
+    )
+    set /a counter+=1, percentage=counter*100/password[#], pb_progress=percentage/4
+    set progress_bar=
+    for /l %%B in (1,1,!pb_progress!) do (
+        set progress_bar=!progress_bar!█
+    )
+    set "progress_bar=!progress_bar!░░░░░░░░░░░░░░░░░░░░░░░░░"
+    set "pad=!password[%%A]!........"
+    title Progress: [!percentage!%%] - [!counter!/!password[#]!]  ^|  !TITLE!
+    <nul set /p="Trying password: "!pad:~0,8!..." │!progress_bar:~0,25!│ (!percentage!%%) | Time-Elapsed: !time_elapsed!!\R!"
+    >nul 2>&1 lib\7za\x64\7za.exe x -aoa -bso0 -o"!user_archive_foldernamepath!" -y "!user_archive_path!" -p"!password[%%A]!" && (
         set "reveal_password=!password[%%A]!"
         goto :FINISHED
     )
-    for /f "delims=" %%B in ('2^>nul dir "!user_archive_name!.*" /a:-d /b /o:d') do (
-        if not "%%B"=="!user_archive_fullname!" (
-            del "%%B"
-        )
+    if exist "!user_archive_foldernamepath!" (
+        rd /s /q "!user_archive_foldernamepath!"
     )
 )
 :FINISHED
+if defined progress_bar (
+    echo:
+)
 echo:
 if defined reveal_password (
     title Archive successfully extracted - !TITLE!
-    echo successfully extracted: "!user_archive_path!"
+    echo Successfully extracted: "!user_archive_path!"
     echo Password: "!reveal_password!"
 ) else (
     title Archive not extracted - !TITLE!
