@@ -2,7 +2,7 @@
 
 ## Description
 
-* Extract an given archive using 7za extracting utility. Using dictionary brute-force attack.
+* Extract an given archive using 7za extracting utility, using dictionary brute-force attack.
 
 ## Showcase
 
