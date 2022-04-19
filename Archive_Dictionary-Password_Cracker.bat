@@ -57,7 +57,8 @@ for /f "delims=" %%A in ('2^>nul dir "!user_archive_name!.*" /a:-d /b /o:d') do 
     )
 )
 for /l %%A in (1,1,!password[#]!) do (
-    2>nul title Trying password: "!password[%%A]!" - !TITLE!
+    set /a counter+=1, percentage=counter*100/password[#]
+    2>nul title Trying password: "!password[%%A]!" ^| [!percentage!/100%%] - !TITLE!
     echo Trying password: "!password[%%A]!"
     >nul 2>&1 lib\7za\x64\7za.exe x "!user_archive_path!" -p"!password[%%A]!" && (
         set "reveal_password=!password[%%A]!"
