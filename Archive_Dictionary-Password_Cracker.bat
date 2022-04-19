@@ -3,8 +3,8 @@
 ::     Archive_Dictionary-Password_Cracker.bat - Archive Dictionary-Password Cracker
 ::
 :: DESCRIPTION
-::     Extract an given archive using 7za extracting utility.
-::     Using dictionary brute-force attack.
+::     Extract an given archive using 7za extracting utility,
+::     using dictionary brute-force attack.
 ::
 :: AUTHOR
 ::     IB_U_Z_Z_A_R_Dl
