@@ -62,7 +62,7 @@ for %%A in (password_reveal password_empty) do (
         set %%A=
     )
 )
->nul 2>&1 lib\7za\x!ARCH!\7za.exe x -aoa -bso0 -o"!user_archive_foldernamepath!" -y "!user_archive_path!" -p"" && (
+lib\7za\x!ARCH!\7za.exe x -aoa -bd -bso0 -bse0 -o"!user_archive_foldernamepath!" -y "!user_archive_path!" -p"" && (
     set password_empty=1
     goto :FINISHED
 )
@@ -102,7 +102,7 @@ for /f "usebackq" %%A in ("!DICTIONARY_COMBOLIST!") do (
     set "pad=%%A........"
     title Progress: [!percentage!%%]  ^|  [!counter!/!password_counter!] - !TITLE!
     <nul set /p="Trying password: "!pad:~0,8!..." │!progress_bar:~0,25!│ (!percentage!%%) | Time-Elapsed: !time_elapsed! !\R!"
-    >nul 2>&1 lib\7za\x!ARCH!\7za.exe x -aoa -bso0 -o"!user_archive_foldernamepath!" -y "!user_archive_path!" -p"%%A" && (
+    lib\7za\x!ARCH!\7za.exe x -aoa -bd -bso0 -bse0 -o"!user_archive_foldernamepath!" -y "!user_archive_path!" -p"%%A" && (
         set "password_reveal=%%A"
         goto :FINISHED
     )
